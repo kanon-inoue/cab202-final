@@ -3,6 +3,9 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "timer.h"
+
+
 void pwm_init(void) 
 {
     // for ex8.4
@@ -34,16 +37,6 @@ void pwm_init(void)
     // enable the timer
     TCA0.SINGLE.CTRLA |= TCA_SINGLE_ENABLE_bm;
 }
-
-
-/** EX: 8.1
-
-TASK: Write a function named "adc_init" below which will configure
-ADC0 in 8-bit single conversion mode.
-
-The ADC should be configured to sample the voltage on the POT net,
-be placed in free-running mode, and start sampling immediately.
-*/
 
 void adc_init() 
 {

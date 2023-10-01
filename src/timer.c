@@ -1,34 +1,35 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <util/delay.h>
 #include <stdint.h>
-#include <stdio.h>
 
-#include <spi.h>
+uint8_t is_counting = 1;
+uint32_t elapsed_time = 0;
 
-void timer_init(void)
-{
-    cli();
-    TCB0.CTRLB = TCB_CNTMODE_INT_gc; // Configure TCB0 in periodic interrupt mode
-    TCB0.CCMP = 3333;                // Set interval for 1ms (3333 clocks @ 3.3 MHz)
-    TCB0.INTCTRL = TCB_CAPT_bm;      // CAPT interrupt enable
-    TCB0.CTRLA = TCB_ENABLE_bm;      // Enable
-    sei();
-}
 
-ISR(TCB0_INT_vect)
-{
-    /** CODE: Write your code for Ex 9.3 within this ISR. */
-    // n11186267
-    // LSH is 1 -> 11101011
-    // RHS is 1 -> 01101011
-    static int left = 1;
-    if (left == 1) {
-        spi_write(0b11101011);
-        left = 0;
-    } else {
-        spi_write(0b01101011);
-        left = 1;
+ISR(TCB1_INT_vect){
+  if (is_counting == 1) 
+  {
+    TCA0.SINGLE.CMP0BUF = elapsed_time;
+    if (elapsed_time < 4630) // 1020= 64*(15+15)/16
+    {
+      elapsed_time = elapsed_time + 1;
     }
-    TCB0.INTFLAGS = TCB_CAPT_bm;
+  }
+  TCB1.INTFLAGS = 0b00000001;
 }
+
+
+
+    // to start the timer 
+    // is_counting = 1;
+    // VPORTA_INTFLAGS = PIN4_bm; pin4 is s1
+
+    // to stop the timer
+    // VPORTA_INTFLAGS = PIN5_bm; pin5 is s2
+
+    // to reset the timer to 0
+    // elapsed_time = 0;
+    // VPORTA_INTFLAGS = PIN7_bm; pin7 is s4
+
+
+
