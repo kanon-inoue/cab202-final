@@ -3,4 +3,4 @@
 #include <stdint.h>
 #include <stdio.h>
 
-void next(void);
+void next(uint32_t MASK, uint32_t *STATE_LFSR);

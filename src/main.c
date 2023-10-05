@@ -7,7 +7,7 @@
 
 // #include "uart.h"
 #include "timer.h"
-// #include "spi.h"
+#include "spi.h"
 #include "initialization.h"
 // #include "sequence.h"
 #include "buzzer.h"
