@@ -2,23 +2,22 @@
 #include <avr/interrupt.h>
 #include <stdint.h>
 
-uint8_t is_counting = 1;
-uint32_t elapsed_time = 0;
+#include "qutyio.h"
 
+uint32_t elapsed_time = 0;
+uint8_t is_counting = 1;
 
 ISR(TCB1_INT_vect){
   if (is_counting == 1) 
   {
     // This makes the noise
     // TCA0.SINGLE.CMP0BUF = elapsed_time;
-    if (elapsed_time < 64) // 1020= 64*(15+15)/16
+    if (elapsed_time < 1020) // 1020= 64*(15+15)/16
     {
       elapsed_time = elapsed_time + 1;
     }
-    else {
-      elapsed_time = 0;
-    }
   }
+  display_hex(elapsed_time/4);
   TCB1.INTFLAGS = 0b00000001;
 }
 
