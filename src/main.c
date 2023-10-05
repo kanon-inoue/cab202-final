@@ -8,9 +8,9 @@
 #include "initialization.h"
 #include "buzzer.h"
 
+#include "sequence.h"
 //#include "uart.h"
 //#include "spi.h"
-//#include "sequence.h"
 
 #include "qutyio.h"
 
@@ -19,6 +19,8 @@
 
 int main(void)
 {
+  uint32_t MASK = 0xE2023CAB;
+  uint32_t STATE_LFSR = 0x11186267;
   uint16_t sequence_length = 1;
   uint16_t score = 0;
   uint16_t playback_delay = 1000;
@@ -49,9 +51,9 @@ int main(void)
         // CMP1BUF = ((uint32_t)9259 * (255 - ADC0/RESULT)) >> 8
       //uint32_t result = 255 - ADC0.RESULT;
       //TCA0.SINGLE.CMP1BUF = ((uint32_t)9259 * result) >> 8;
-        
+      printf("elapsed time is %u \n", elapsed_time);
       // PB0 is connected to buzzeer
-      if (elapsed_time >= 4630) {
+      if (elapsed_time <= 4630) {
         TCA0.SINGLE.CMP0BUF = elapsed_time;
       } else {
         TCA0.SINGLE.CMP0BUF = 0;

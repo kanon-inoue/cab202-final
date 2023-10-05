@@ -7,8 +7,8 @@
 
 
 // B. The Sequence
-uint32_t MASK = 0xE2023CAB;
-uint32_t STATE_LFSR = 0x11186267;
+// uint32_t MASK = 0xE2023CAB;
+// uint32_t STATE_LFSR = 0x11186267;
 
 void next(uint32_t MASK, uint32_t *STATE_LFSR) {
   uint32_t BIT = *STATE_LFSR & 1; // BIT ← lsbit(STATE_LFSR) 
