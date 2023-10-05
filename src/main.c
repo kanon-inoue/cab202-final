@@ -26,6 +26,8 @@ int main(void)
 
   serial_init();
 
+  printf("it starts runnnig!");
+
   uint16_t sequence_length = 1;
   uint16_t score = 0;
   uint16_t playback_delay = 0;
