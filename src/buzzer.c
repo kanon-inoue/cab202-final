@@ -4,14 +4,15 @@
 #include <stdio.h>
 
 #include "timer.h"
-
+#include "qutyio.h"
 
 
 void pwm_init(void) 
 {
-    PORTB.OUTSET = PIN1_bm;
+    printf("the pwm is called \n");
+    PORTB.OUTSET = PIN1_bm; // enable? DISPEN?
     PORTB.DIRSET = PIN1_bm; // the DISPEN as output 
-    PORTB.DIRSET = PIN0_bm; //for display en
+    PORTB.DIRSET = PIN0_bm; //for display en???  for buzzer?
     TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc; // 3.33 Mhz (prescalar = 1)
     TCA0.SINGLE.CTRLB = TCA_SINGLE_WGMODE_SINGLESLOPE_gc | TCA_SINGLE_CMP1EN_bm | TCA_SINGLE_CMP0EN_bm; // single slope, WO1 (ex8.4 and WO0)
 
@@ -25,7 +26,7 @@ void pwm_init(void)
 
     TCA0.SINGLE.CTRLA |= TCA_SINGLE_ENABLE_bm;  // enable the timer
 
-    printf("its runnig");
+    printf("pwm is done \n");
 }
 
 void adc_init() 
