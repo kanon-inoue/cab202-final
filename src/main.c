@@ -19,18 +19,18 @@
 
 int main(void)
 {
-  // Configures pins PA1, PC0, and PC2, to drive the 7-segment display
-  display_init();
-  // Drives DISP EN net HIGH
-  display_on();
+  uint16_t sequence_length = 1;
+  uint16_t score = 0;
+  uint16_t playback_delay = 0;
 
+  uint8_t result = 50;
+
+  display_init();  // Configures pins PA1, PC0, and PC2, to drive the 7-segment display
+  display_on(); // Drives DISP EN net HIGH
   serial_init();
 
   printf("it starts runnnig!");
 
-  uint16_t sequence_length = 1;
-  uint16_t score = 0;
-  uint16_t playback_delay = 0;
   
   // for buzzer
   PORTA.DIRSET = PIN1_bm; // DISP LATCH??
@@ -38,11 +38,21 @@ int main(void)
   _delay_ms(3000); // 3 second delay
 
   clock_init();
-  //buttons_init();
+  buttons_init();
+  printf("The stopwatch is working");
   pwm_init();
+  printf("The buzzer is working");
 
   while (1)
     {
+      // duty cycle = ((255 - ADC0/RESULT)/255) 
+        // CMP1BUF = 9259 * ((255 - ADC0/RESULT) / 255) 
+        // CMP1BUF = (9259 * ((255 - ADC0/RESULT)) / 256 
+        // CMP1BUF = (9259 * (255 - ADC0/RESULT)) >> 8
+        // CMP1BUF = ((uint32_t)9259 * (255 - ADC0/RESULT)) >> 8
+      uint32_t result = 255 - ADC0.RESULT;
+      TCA0.SINGLE.CMP1BUF = ((uint32_t)9259 * result) >> 8;
+        
       // PB0 is connected to buzzeer
       if (elapsed_time >= 4630) {
         TCA0.SINGLE.CMP0BUF = elapsed_time;
