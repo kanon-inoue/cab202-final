@@ -6,6 +6,7 @@
 
 #include "qutyio.h"
 
+void init(void);
 
 int main(void)
 {
