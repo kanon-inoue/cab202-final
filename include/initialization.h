@@ -7,14 +7,10 @@
 void clock_init(void)
 {
     cli(); // clear all intrupt 
-
-    // TCB1 is a 16-bit timer that has been configured to generate
-    // an interrupt every 1/64 of a second.
-    TCB1.CCMP = 52083;
+    TCB1.CCMP = 3333;
     TCB1.CTRLB = TCB_CNTMODE_INT_gc;
     TCB1.INTCTRL = TCB_CAPT_bm;
     TCB1.CTRLA = TCB_ENABLE_bm;
-
     sei(); // set all intrupts
 }
 

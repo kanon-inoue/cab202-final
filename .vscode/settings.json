@@ -1,6 +1,7 @@
 {
   "files.associations": {
     "delay.h": "c",
-    "initialization.h": "c"
+    "initialization.h": "c",
+    "qutyio.h": "c"
   }
 }

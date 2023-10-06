@@ -8,7 +8,8 @@
 //   cli(); // disable interrupts 
 //   PORTMUX.SPIROUTEA = PORTMUX_SPI0_ALT1_gc; // enable spi on PC0-3
 //   PORTC.DIRSET = (PIN0_bm | PIN2_bm); // SPI CLK ans SPI MOIS enable as output
-//   PORTA.DIRSET =PIN1_bm; // Enable Disp Latch as output
+//   PORTA.OUTSET = PIN1_bm; ??????
+//   PORTA.DIRSET = PIN1_bm; // Enable Disp Latch as output
   
 //   SPI0.CTRLA = SPI_MASTER_bm; // master mode | MSB first | prescalar / 4
 //   SPI0.CTRLB = SPI_SSD_bm; // unbuffered | disable client select line
