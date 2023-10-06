@@ -1,7 +1,6 @@
 #include <avr/io.h>
 #include <stdio.h>
 
-#include "timer.h"
 #include "initialization.h"
 #include "buzzer.h"
 
@@ -17,6 +16,8 @@ uint16_t sequence_length = 1;
 uint16_t score = 0;
 uint16_t playback_delay = 1000;
 uint8_t buzzer_switch = 1;
+uint16_t elapsed_time = 0;
+uint8_t is_counting = 1;
 
 void init(void)
 {
@@ -37,6 +38,7 @@ void init(void)
 
 }
 
+// for buzzer
 ISR(TCB1_INT_vect) {
   printf("elapsed time is %u \n", elapsed_time); 
 
@@ -61,3 +63,26 @@ ISR(TCB1_INT_vect) {
     // when certain criterion met
     // set is-counting to zero
 }
+
+// for button
+// ISR(PORTA_PORT_vect)
+// {
+//   // start stopwatch
+//   if (VPORTA.INTFLAGS & PIN4_bm) 
+//   {
+//     is_counting = 1;
+//     VPORTA_INTFLAGS = PIN4_bm;
+//   } 
+//   // stop it
+//   if (VPORTA.INTFLAGS & PIN5_bm) 
+//   {
+//     is_counting = 0;
+//     VPORTA_INTFLAGS = PIN5_bm;
+//   }
+//   // reset it to 0
+//   if (VPORTA.INTFLAGS & PIN7_bm) 
+//   {
+//     elapsed_time = 0;
+//     VPORTA_INTFLAGS = PIN7_bm;
+//   }
+// }

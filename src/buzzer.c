@@ -3,7 +3,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "timer.h"
 #include "qutyio.h"
 
 void pwm_init(void) 
