@@ -83,7 +83,7 @@ ISR(PORTA_PORT_vect)
   if (VPORTA.INTFLAGS & PIN4_bm) 
   {
     // light the left left line
-    spi_write(0b11000001);
+    spi_write(0b10111110);
     //0b1FAB GCDE 
     VPORTA_INTFLAGS = PIN4_bm;
   } 
@@ -91,21 +91,21 @@ ISR(PORTA_PORT_vect)
   if (VPORTA.INTFLAGS & PIN5_bm) 
   {
     // light the left right line
-    spi_write(0b10010100);
+    spi_write(0b11101011);
     VPORTA_INTFLAGS = PIN5_bm;
   }
   // s3
   if (VPORTA.INTFLAGS & PIN6_bm) 
   {
     // light the right left line
-    spi_write(0b01000001);
+    spi_write(0b00111110);
     VPORTA_INTFLAGS = PIN6_bm;
   }
   // reset it to 0
   if (VPORTA.INTFLAGS & PIN7_bm) 
   {
     // light the right right line
-    spi_write(0b00010100);
+    spi_write(0b01101011);
     VPORTA_INTFLAGS = PIN7_bm;
   }
 }
