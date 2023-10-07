@@ -20,7 +20,7 @@ void pwm_init(void)
     // DISPEN - see schematic 
     // connects to waveform output 1, which is CMP1
     // % duty cycle * PER (0.17 * 9259 )
-    TCA0.SINGLE.CMP1BUF = 1574; //for screen? 
+    TCA0.SINGLE.CMP1 = 1574; //for screen? 
 
     TCA0.SINGLE.CTRLA |= TCA_SINGLE_ENABLE_bm;  // enable the timer
 

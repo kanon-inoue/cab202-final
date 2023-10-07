@@ -18,7 +18,8 @@ void buttons_init(void)
 {
     PORTA_PIN4CTRL = 0b00001011; // s1
     PORTA_PIN5CTRL = 0b00001011; // s2
-    PORTA_PIN7CTRL = 0b00001011; // s3
+    PORTA_PIN6CTRL = 0b00001011; // s3
+    PORTA_PIN7CTRL = 0b00001011; // s4
 } 
 
 #endif
