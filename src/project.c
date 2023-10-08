@@ -6,29 +6,33 @@
 #include "buzzer.h"
 #include "project.h"
 
+// #include "qutyio.h"
 #include "sequence.h"
 #include "uart.h"
 #include "spi.h"
+
+typedef enum {
+PLAY_NOTE,
+WAIT_START,
+RECV_IDENT,
+RECV_PAYLOAD,
+FAIL,
+DISPLAY_SCORE,
+BLANK_DISPLAY
+} serialstate;
 
 uint32_t MASK = 0xE2023CAB;
 uint32_t STATE_LFSR = 0x11186267;
 uint16_t sequence_length = 1;
 uint16_t score = 0;
 uint16_t playback_delay = 1000;
-uint8_t buzzer_switch = 1;
+uint8_t buzzer_switch = 0;
 uint16_t elapsed_time = 0;
 uint8_t is_counting = 1;
 
+
 void init()
 {
-  // for buzzer
-  // PORTA.DIRSET = PIN1_bm; // DISP LATCH??
-  // printf("disp latch okay \n");
-  // PORTA.PIN7CTRL = PORT_PULLUPEN_bm; // button3?
-  // printf("printf okay \n");
-  // _delay_ms(3000); // 3 second delay
-
-
   // for timer 
   clock_init();
   pwm_init();
@@ -38,22 +42,44 @@ void init()
 
   // for buttons
   buttons_init();
-  
-
+  spi_init();
 }
+
 
 // for buzzer
 ISR(TCB1_INT_vect) {
-  // if (true_elapsed == total_ms_value):
-  //    TCA0.SINGLE.CTRLA |= TCA_SINGLE_ENABLE_bm; // <-- This but the opposite
+  static serialstate state = BLANK_DISPLAY;
 
-  if ((buzzer_switch == 1) && (elapsed_time == (playback_delay / 2))) {
-    TCA0.SINGLE.PERBUF = 0;
-    TCA0.SINGLE.CMP0BUF = 0;
-    spi_write(0b01111111); //0b1FAB GCDE 
-    spi_write(0b11111111);
-    elapsed_time = 0;
-    buzzer_switch = 0;
+  switch (state) {
+    case BLANK_DISPLAY:
+      spi_write(0xFF); // clear display
+
+      if (elapsed_time == playback_delay) {
+        state = PLAY_NOTE;
+        elapsed_time = 0;
+      }
+      break;
+    case PLAY_NOTE:
+      // Need to change this to make a sequence
+      TCA0.SINGLE.PERBUF = 9523; // freq is 350 Hz  // 3.33/frequency
+      TCA0.SINGLE.CMP0BUF = 4761; // PWM / 2 = 50% duty cycle
+      if (elapsed_time == playback_delay) {
+        state = WAIT_START;
+        elapsed_time = 0;
+        TCA0.SINGLE.PERBUF = 0;
+        TCA0.SINGLE.CMP0BUF = 0;
+      }
+      break;
+    case WAIT_START:
+      if ((buzzer_switch == 1) && (elapsed_time == (playback_delay / 2))) {
+        TCA0.SINGLE.PERBUF = 0;
+        TCA0.SINGLE.CMP0BUF = 0;
+        spi_write(0xFF); // clear display
+        elapsed_time = 0;
+        buzzer_switch = 0;
+        state = BLANK_DISPLAY;
+      }
+      break;
   }
 
   elapsed_time++;
@@ -66,7 +92,6 @@ ISR(TCB1_INT_vect) {
 // for button
 ISR(PORTA_PORT_vect)
 {
-  spi_init();
   // push s1
   if (VPORTA.INTFLAGS & PIN4_bm) 
   {
