@@ -7,10 +7,8 @@
 #include "project.h"
 
 #include "sequence.h"
-//#include "uart.h"
-// #include "spi.h"
-
-#include "qutyio.h"
+#include "uart.h"
+#include "spi.h"
 
 uint32_t MASK = 0xE2023CAB;
 uint32_t STATE_LFSR = 0x11186267;

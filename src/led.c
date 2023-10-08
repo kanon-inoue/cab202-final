@@ -1,7 +1,6 @@
 #include <avr/io.h>
 #include <stdio.h>
 
-// #include "qutyio.h"
 #include "led.h"
 
 void enable_led(void) {

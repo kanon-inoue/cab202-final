@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <util/delay.h>
 
-#include "qutyio.h"
 #include "project.h"
 
 

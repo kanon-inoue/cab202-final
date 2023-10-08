@@ -2,7 +2,6 @@
   "files.associations": {
     "delay.h": "c",
     "initialization.h": "c",
-    "qutyio.h": "c",
     "spi.h": "c"
   }
 }
