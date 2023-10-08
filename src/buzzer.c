@@ -5,6 +5,11 @@
 
 #include "qutyio.h"
 
+// E (high) == 467 * 2^(-5/12) == 349.85 ~= 350
+// C# == 467 * 2^(-8/12) == 294.19 ~= 294
+// A == 467
+// E (low) == 467 * 2^(-17/12) == 174.93 ~= 175
+
 void pwm_init(void) 
 {
     printf("the pwm is called \n");
