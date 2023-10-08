@@ -33,9 +33,6 @@ void init()
   clock_init();
   pwm_init();
 
-  TCA0.SINGLE.PERBUF = 1579; // freq is 2110   // 3.33333/frequency
-  TCA0.SINGLE.CMP0BUF = 790; // PWM / 2 = 50% duty cycle
-
   // for LED
   enable_led();
 
@@ -47,24 +44,17 @@ void init()
 
 // for buzzer
 ISR(TCB1_INT_vect) {
-  printf("elapsed time is %u \n", elapsed_time); 
-
-  if ((buzzer_switch == 0) && (elapsed_time == 660)) {
-    TCA0.SINGLE.PERBUF = 1579; // freq is 2110   // 3.33/frequency
-    TCA0.SINGLE.CMP0BUF = 790; // PWM / 2 = 50% duty cycle
-    buzzer_switch = 1;
-    elapsed_time = 0;
-    printf("660 is making noise \n");
-  } else if ((buzzer_switch == 1) && (elapsed_time == 320) ) {
-    TCA0.SINGLE.PERBUF = 685; //686
-    TCA0.SINGLE.CMP0BUF = 342;  // 343// for pwm 1/4860 -> // control frequency of the buzzer   time
-    buzzer_switch = 0;
-    elapsed_time = 0;
-    printf("320 is making noise \n");
-  }
-
   // if (true_elapsed == total_ms_value):
   //    TCA0.SINGLE.CTRLA |= TCA_SINGLE_ENABLE_bm; // <-- This but the opposite
+
+  if ((buzzer_switch == 1) && (elapsed_time == (playback_delay / 2))) {
+    TCA0.SINGLE.PERBUF = 0;
+    TCA0.SINGLE.CMP0BUF = 0;
+    spi_write(0b01111111); //0b1FAB GCDE 
+    spi_write(0b11111111);
+    elapsed_time = 0;
+    buzzer_switch = 0;
+  }
 
   elapsed_time++;
   TCB1.INTFLAGS = TCB_CAPT_bm;
@@ -81,29 +71,48 @@ ISR(PORTA_PORT_vect)
   if (VPORTA.INTFLAGS & PIN4_bm) 
   {
     // light the left left line
-    spi_write(0b10111110);
-    //0b1FAB GCDE 
+    // E (high) == 467 * 2^(-5/12) == 349.85 ~= 350 Hz -> 9522.86 for perbuf -> INC = 19046  DEC = 4761
+    spi_write(0b10111110); //0b1FAB GCDE 
     VPORTA_INTFLAGS = PIN4_bm;
+    TCA0.SINGLE.PERBUF = 9523; // freq is 350 Hz  // 3.33/frequency
+    TCA0.SINGLE.CMP0BUF = 4761; // PWM / 2 = 50% duty cycle
+    buzzer_switch = 1;
+    elapsed_time = 0;
   } 
-  // stop it
+  // push s2
+  // C# == 467 * 2^(-8/12) == 294.19 ~= 294 Hz -> 11336.73 for perbuf
   if (VPORTA.INTFLAGS & PIN5_bm) 
   {
     // light the left right line
     spi_write(0b11101011);
     VPORTA_INTFLAGS = PIN5_bm;
+    TCA0.SINGLE.PERBUF = 11337; // freq is 294 Hz  // 3.33/frequency
+    TCA0.SINGLE.CMP0BUF = 5668; // PWM / 2 = 50% duty cycle
+    buzzer_switch = 1;
+    elapsed_time = 0;
   }
   // s3
+  // A == 467 Hz
   if (VPORTA.INTFLAGS & PIN6_bm) 
   {
     // light the right left line
     spi_write(0b00111110);
     VPORTA_INTFLAGS = PIN6_bm;
+    TCA0.SINGLE.PERBUF = 7137; // freq is 467 Hz  // 3.33/frequency
+    TCA0.SINGLE.CMP0BUF = 3569; // PWM / 2 = 50% duty cycle
+    buzzer_switch = 1;
+    elapsed_time = 0;
   }
-  // reset it to 0
+  // s4
+  // E (low) == 467 * 2^(-17/12) == 174.93 ~= 175 Hz
   if (VPORTA.INTFLAGS & PIN7_bm) 
   {
     // light the right right line
     spi_write(0b01101011);
     VPORTA_INTFLAGS = PIN7_bm;
+    TCA0.SINGLE.PERBUF = 19045; // freq is 175 Hz  // 3.33/frequency
+    TCA0.SINGLE.CMP0BUF = 9523; // PWM / 2 = 50% duty cycle
+    buzzer_switch = 1;
+    elapsed_time = 0;
   }
 }
