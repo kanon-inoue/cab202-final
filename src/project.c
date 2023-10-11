@@ -1,5 +1,6 @@
 #include <avr/io.h>
 #include <stdio.h>
+#include <string.h>
 #include <util/delay.h>
 
 #include "initialization.h"
@@ -30,7 +31,7 @@ uint16_t playback_delay = 1000;
 uint8_t buzzer_switch = 0;
 uint16_t elapsed_time = 0;
 uint8_t is_counting = 1;
-uint8_t inputs[200];
+uint32_t inputs[200];
 uint8_t current_input = 0;
 uint8_t current_note_to_play = 0;
 uint32_t next_step = 0;
@@ -54,11 +55,11 @@ void init()
 // for buzzer
 ISR(TCB1_INT_vect) {
   static serialstate state = BLANK_DISPLAY;
-  static uint16_t sequence[200];
+  static uint32_t sequence[200];
 
   switch (state) {
     case BLANK_DISPLAY:
-      spi_write(0xFF); // clear display
+      spi_write(0xF0); // clear display
 
       if (elapsed_time == playback_delay) {
         state = PLAY_NEW_NOTE;
@@ -69,6 +70,7 @@ ISR(TCB1_INT_vect) {
     case PLAY_NEW_NOTE:
       if (next_step == 0) {
         next_step = next(mask, studentNum);
+        
         if (next_step == 1) {
           TCA0.SINGLE.PERBUF = 9523; // freq is 350 Hz  // 3.33/frequency
           TCA0.SINGLE.CMP0BUF = 4761; // PWM / 2 = 50% duty cycle
@@ -104,12 +106,12 @@ ISR(TCB1_INT_vect) {
       break;
 
     case PLAY_EXISTING_NOTE:
-      spi_write(0b00000000);
-
       if (current_note_to_play == sequence_length - 1) {
         current_note_to_play = 0;
         state = PLAY_NEW_NOTE;
       } else {
+        buzzer_switch = 1;
+        elapsed_time = 0;
         if (sequence[current_note_to_play] == 1) {
           TCA0.SINGLE.PERBUF = 9523; // freq is 350 Hz  // 3.33/frequency
           TCA0.SINGLE.CMP0BUF = 4761; // PWM / 2 = 50% duty cycle
@@ -118,7 +120,8 @@ ISR(TCB1_INT_vect) {
         else if (sequence[current_note_to_play] == 2) {
           TCA0.SINGLE.PERBUF = 11337; // freq is 294 Hz  // 3.33/frequency
           TCA0.SINGLE.CMP0BUF = 5668; // PWM / 2 = 50% duty cycle
-          spi_write(0b11101011);
+          // spi_write(0b11101011);
+          spi_write(0x00);
         }
         else if (sequence[current_note_to_play] == 3) {
           TCA0.SINGLE.PERBUF = 7137; // freq is 467 Hz  // 3.33/frequency
@@ -132,29 +135,30 @@ ISR(TCB1_INT_vect) {
         }
       }
     
-      if (elapsed_time == playback_delay/2) {
+      if ((buzzer_switch == 1) && (elapsed_time == (playback_delay / 2))) {
         TCA0.SINGLE.PERBUF = 0;
         TCA0.SINGLE.CMP0BUF = 0;
-        spi_write(0xFF); // clear display
+        spi_write(0x00); // clear display
+        buzzer_switch = 0;
       }
       if (elapsed_time == playback_delay) {
-        state = RECV_IDENT;
+        state = PLAY_NEW_NOTE;
         current_note_to_play += 1;
         elapsed_time = 0;
       }
       break;
     case RECV_IDENT:
-      if ((inputs[current_input] != sequence[current_input]) && (inputs[current_input] != NULL)) {
-        memset(inputs, '\0', sizeof(inputs)); // reset the input array
-        current_input = 0;
-        state = BLANK_DISPLAY;
-      }
       if ((buzzer_switch == 1) && (elapsed_time == (playback_delay / 2))) {
         TCA0.SINGLE.PERBUF = 0;
         TCA0.SINGLE.CMP0BUF = 0;
         spi_write(0xFF); // clear display
         elapsed_time = 0;
         buzzer_switch = 0;
+        if ((inputs[current_input - 1] != sequence[current_input - 1]) && (inputs[current_input - 1] != NULL)) {
+          memset(inputs, '\0', sizeof(inputs)); // reset the input array
+          current_input = 0;
+          state = BLANK_DISPLAY;
+        }
         if (current_input == sequence_length) {
           sequence_length += 1;
           memset(inputs, '\0', sizeof(inputs)); // reset the input array
@@ -229,7 +233,7 @@ ISR(PORTA_PORT_vect)
     TCA0.SINGLE.CMP0BUF = 9523; // PWM / 2 = 50% duty cycle
     buzzer_switch = 1;
     elapsed_time = 0;
-    inputs[current_input] = 3;
+    inputs[current_input] = 4;
     current_input += 1;
   }
 }
