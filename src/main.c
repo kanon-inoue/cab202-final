@@ -9,10 +9,6 @@
 
 int main(void)
 {
-  // display_init();  // Configures pins PA1, PC0, and PC2, to drive the 7-segment display
-  // display_on(); // Drives DISP EN net HIGH
-  // serial_init();
-
   printf("the main starts runnnig! \n");
 
   init();
