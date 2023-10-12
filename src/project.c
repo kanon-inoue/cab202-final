@@ -57,7 +57,7 @@ ISR(TCB1_INT_vect) {
 
   switch (state) {
     case BLANK_DISPLAY:
-      spi_write(0xFF); // clear display 
+      spi_write(0x00); // clear display 
       if (elapsed_time == playback_delay) {
         state = PLAY_NEW_NOTE;
         elapsed_time = 0;
