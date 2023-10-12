@@ -7,7 +7,6 @@
 #include "buzzer.h"
 #include "project.h"
 
-// #include "qutyio.h"
 #include "sequence.h"
 #include "uart.h"
 #include "spi.h"
@@ -59,34 +58,28 @@ ISR(TCB1_INT_vect) {
 
   switch (state) {
     case BLANK_DISPLAY:
-      spi_write(0xF0); // clear display
-
+      spi_write(0xF0); // clear display 
       if (elapsed_time == playback_delay) {
         state = PLAY_NEW_NOTE;
         elapsed_time = 0;
       }
       break;
-
     case PLAY_NEW_NOTE:
       if (next_step == 0) {
-        next_step = next(mask, studentNum);
-        
+        next_step = next(mask, &studentNum);
         if (next_step == 1) {
           TCA0.SINGLE.PERBUF = 9523; // freq is 350 Hz  // 3.33/frequency
           TCA0.SINGLE.CMP0BUF = 4761; // PWM / 2 = 50% duty cycle
           spi_write(0b10111110);
-        }
-        else if (next_step == 2) {
+        } else if (next_step == 2) {
           TCA0.SINGLE.PERBUF = 11337; // freq is 294 Hz  // 3.33/frequency
           TCA0.SINGLE.CMP0BUF = 5668; // PWM / 2 = 50% duty cycle
           spi_write(0b11101011);
-        }
-        else if (next_step == 3) {
+        } else if (next_step == 3) {
           TCA0.SINGLE.PERBUF = 7137; // freq is 467 Hz  // 3.33/frequency
           TCA0.SINGLE.CMP0BUF = 3569; // PWM / 2 = 50% duty cycle
           spi_write(0b00111110);
-        }
-        else if (next_step == 4) {
+        } else if (next_step == 4) {
           TCA0.SINGLE.PERBUF = 19045; // freq is 175 Hz  // 3.33/frequency
           TCA0.SINGLE.CMP0BUF = 9523; // PWM / 2 = 50% duty cycle
           spi_write(0b01101011);
@@ -99,12 +92,11 @@ ISR(TCB1_INT_vect) {
         spi_write(0xFF); // clear display
       }
       if (elapsed_time == playback_delay) {
-        state = RECV_IDENT;
         elapsed_time = 0;
         next_step = 0;
+        state = RECV_IDENT;
       }
       break;
-
     case PLAY_EXISTING_NOTE:
       if (current_note_to_play == sequence_length - 1) {
         current_note_to_play = 0;
@@ -116,25 +108,21 @@ ISR(TCB1_INT_vect) {
           TCA0.SINGLE.PERBUF = 9523; // freq is 350 Hz  // 3.33/frequency
           TCA0.SINGLE.CMP0BUF = 4761; // PWM / 2 = 50% duty cycle
           spi_write(0b10111110);
-        }
-        else if (sequence[current_note_to_play] == 2) {
+        } else if (sequence[current_note_to_play] == 2) {
           TCA0.SINGLE.PERBUF = 11337; // freq is 294 Hz  // 3.33/frequency
           TCA0.SINGLE.CMP0BUF = 5668; // PWM / 2 = 50% duty cycle
           // spi_write(0b11101011);
           spi_write(0x00);
-        }
-        else if (sequence[current_note_to_play] == 3) {
+        } else if (sequence[current_note_to_play] == 3) {
           TCA0.SINGLE.PERBUF = 7137; // freq is 467 Hz  // 3.33/frequency
           TCA0.SINGLE.CMP0BUF = 3569; // PWM / 2 = 50% duty cycle
           spi_write(0b00111110);
-        }
-        else if (sequence[current_note_to_play] == 4) {
+        } else if (sequence[current_note_to_play] == 4) {
           TCA0.SINGLE.PERBUF = 19045; // freq is 175 Hz  // 3.33/frequency
           TCA0.SINGLE.CMP0BUF = 9523; // PWM / 2 = 50% duty cycle
           spi_write(0b01101011);
         }
       }
-    
       if ((buzzer_switch == 1) && (elapsed_time == (playback_delay / 2))) {
         TCA0.SINGLE.PERBUF = 0;
         TCA0.SINGLE.CMP0BUF = 0;
@@ -167,7 +155,6 @@ ISR(TCB1_INT_vect) {
         }
       }
       break;
-
   }
 
   elapsed_time++;
