@@ -14,9 +14,7 @@
 typedef enum {
 PLAY_NEW_NOTE,
 PLAY_EXISTING_NOTE,
-WAIT_INPUT,
 RECV_IDENT,
-RECV_PAYLOAD,
 FAIL,
 DISPLAY_SCORE,
 BLANK_DISPLAY
@@ -25,7 +23,6 @@ BLANK_DISPLAY
 uint32_t mask = 0xE2023CAB;
 uint32_t studentNum = 0x11186267;
 uint16_t sequence_length = 1;
-uint16_t score = 0;
 uint16_t playback_delay = 1000;
 uint8_t buzzer_switch = 0;
 uint16_t elapsed_time = 0;
@@ -57,7 +54,7 @@ ISR(TCB1_INT_vect) {
 
   switch (state) {
     case BLANK_DISPLAY:
-      spi_write(0x00); // clear display 
+      spi_write(0x00); // 8 display 
       if (elapsed_time == playback_delay) {
         state = PLAY_NEW_NOTE;
         elapsed_time = 0;
@@ -148,7 +145,7 @@ ISR(TCB1_INT_vect) {
         if ((inputs[current_input - 1] != sequence[current_input - 1]) && (inputs[current_input - 1] != NULL)) {
           memset(inputs, '\0', sizeof(inputs)); // reset the input array
           current_input = 0;
-          state = BLANK_DISPLAY;
+          state = FAIL;
           elapsed_time = 0;
         }
         // SUCCESS
@@ -161,6 +158,20 @@ ISR(TCB1_INT_vect) {
         }
       }
       break;
+    case FAIL: 
+      spi_write(0b01110111); // TODO
+      spi_write(0b11110111); // TODO
+      if(elapsed_time == playback_delay) {
+        elapsed_time = 0;
+        state = DISPLAY_SCORE;
+      }
+      break;
+    case DISPLAY_SCORE:
+      display_score(sequence_length);
+      if (elapsed_time == playback_delay) {
+        elapsed_time = 0;
+        state = BLANK_DISPLAY;
+      }
   }
 
   elapsed_time++;
