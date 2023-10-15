@@ -2,32 +2,30 @@
 #include <stdio.h>
 #include <string.h>
 #include <util/delay.h>
-
 #include "initialization.h"
-#include "buzzer.h"
 #include "project.h"
-
+#include "buzzer.h"
 #include "sequence.h"
 #include "uart.h"
 #include "spi.h"
 
 typedef enum {
-PLAY_NEW_NOTE,
-PLAY_EXISTING_NOTE,
-RECV_IDENT,
-FAIL,
-DISPLAY_SCORE,
-BLANK_DISPLAY
+PLAY_NEW_NOTE, // for playing a new note after successing
+PLAY_EXISTING_NOTE, // for playing exsisting notes which can be 1 to any
+RECV_IDENT, // for waiting for the player pushes a buttum input
+FAIL, // for when the player fails
+DISPLAY_SCORE, // for desplaying the score on the LED display on the QUTy and serial monitor
+BLANK_DISPLAY // for blank the LED display
 } serialstate;
 
 uint32_t mask = 0xE2023CAB;
-uint32_t studentNum = 0x11186267;
-uint16_t sequence_length = 1;
-uint16_t playback_delay = 1000;
-uint8_t buzzer_switch = 0;
+uint32_t studentNum = 0x11186267; 
+uint16_t sequence_length = 1; 
+uint16_t playback_delay = 1000; // TODO
+uint8_t buzzer_switch = 0; // the buzzer switch is off
 uint16_t elapsed_time = 0;
-uint8_t is_counting = 1;
-uint32_t inputs[200];
+uint8_t is_counting = 1; 
+uint32_t inputs[256]; // TODO the maximum score is 
 uint8_t current_input = 0;
 uint8_t current_note_to_play = 0;
 uint32_t next_step = 0;
