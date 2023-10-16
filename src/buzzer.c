@@ -10,8 +10,7 @@
 
 void pwm_init(void) 
 {
-    printf("the pwm is called \n");
-    PORTB.OUTSET = PIN1_bm; // enable? DISPEN?
+    PORTB.OUTSET = PIN1_bm; // enable DISPEN for brightness
     PORTB.DIRSET = PIN1_bm; // the DISPEN as output 
     PORTB.DIRSET = PIN0_bm; //for display en???  for buzzer?
     TCA0.SINGLE.CTRLA = TCA_SINGLE_CLKSEL_DIV1_gc; // 3.33 Mhz (prescalar = 1)
@@ -26,8 +25,6 @@ void pwm_init(void)
     TCA0.SINGLE.CMP1 = 1574; //for screen? 
 
     TCA0.SINGLE.CTRLA |= TCA_SINGLE_ENABLE_bm;  // enable the timer
-
-    printf("pwm is done \n");
 }
 
 void adc_init() 

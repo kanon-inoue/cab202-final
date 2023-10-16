@@ -3,7 +3,6 @@
 #include <string.h>
 #include <util/delay.h>
 #include "initialization.h"
-#include "project.h"
 #include "led.h"
 #include "buzzer.h"
 #include "sequence.h"
