@@ -41,7 +41,7 @@ void init(void) { // TODO
 }
 
 ISR(TCB1_INT_vect) { // for timer
-  static uint32_t sequence[256];
+  static uint32_t sequence[250];
 
   switch (state) {
     case BLANK_DISPLAY:
