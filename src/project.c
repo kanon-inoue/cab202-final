@@ -101,7 +101,7 @@ ISR(TCB1_INT_vect) { // for timer
         buzzer_switch = 0;
       }
       if (elapsed_time == playback_delay) {
-        if ((inputs[current_input - 1] != sequence[current_input - 1]) && (inputs[current_input - 1] != NULL)) { // when FAIL
+        if ((inputs[current_input - 1] != sequence[current_input - 1]) && (inputs[current_input - 1] != '\0')) { // when FAIL
           memset(inputs, '\0', sizeof(inputs)); // reset the input array
           current_input = 0;
           state = FAIL;
@@ -117,15 +117,14 @@ ISR(TCB1_INT_vect) { // for timer
       }
       break;
     case FAIL: 
-      spi_write(0b01110111); // TODO
-      spi_write(0b11110111); // TODO
+      fail_desplay(elapsed_time); // light up the both g segments
       if(elapsed_time == playback_delay) {
         elapsed_time = 0;
         state = DISPLAY_SCORE;
       }
       break;
     case DISPLAY_SCORE:
-      display_score(sequence_length);
+      display_score(sequence_length, elapsed_time);
       if (elapsed_time == playback_delay) {
         elapsed_time = 0;
         state = BLANK_DISPLAY;
@@ -135,17 +134,12 @@ ISR(TCB1_INT_vect) { // for timer
   TCB1.INTFLAGS = TCB_CAPT_bm;
 }
 
-// for button
-ISR(PORTA_PORT_vect)
-{
+ISR(PORTA_PORT_vect) { // for button 
   if (state == RECV_IDENT) {
-    // push s1
-    if (VPORTA.INTFLAGS & PIN4_bm) 
-    {
-      // light the left left line
-      // E (high) == 467 * 2^(-5/12) == 349.85 ~= 350 Hz -> 9522.86 for perbuf -> INC = 19046  DEC = 4761
-      spi_write(0b10111110); //0b1FAB GCDE 
+    if (VPORTA.INTFLAGS & PIN4_bm) { // push s1
+      spi_write(0b10111110); //0b1FAB GCDE // light the left left line
       VPORTA_INTFLAGS = PIN4_bm;
+      // E (high) == 467 * 2^(-5/12) == 349.85 ~= 350 Hz -> 9522.86 for perbuf -> INC = 19046  DEC = 4761
       TCA0.SINGLE.PERBUF = 9523; // freq is 350 Hz  // 3.33/frequency
       TCA0.SINGLE.CMP0BUF = 4761; // PWM / 2 = 50% duty cycle
       buzzer_switch = 1;
@@ -153,13 +147,10 @@ ISR(PORTA_PORT_vect)
       inputs[current_input] = 1;
       current_input += 1;
     } 
-    // push s2
-    // C# == 467 * 2^(-8/12) == 294.19 ~= 294 Hz -> 11336.73 for perbuf
-    if (VPORTA.INTFLAGS & PIN5_bm) 
-    {
-      // light the left right line
-      spi_write(0b11101011);
+    if (VPORTA.INTFLAGS & PIN5_bm) { // push s2
+      spi_write(0b11101011); // light the left right line
       VPORTA_INTFLAGS = PIN5_bm;
+      // C# == 467 * 2^(-8/12) == 294.19 ~= 294 Hz -> 11336.73 for perbuf
       TCA0.SINGLE.PERBUF = 11337; // freq is 294 Hz  // 3.33/frequency
       TCA0.SINGLE.CMP0BUF = 5668; // PWM / 2 = 50% duty cycle
       buzzer_switch = 1;
@@ -167,12 +158,8 @@ ISR(PORTA_PORT_vect)
       inputs[current_input] = 2;
       current_input += 1;
     }
-    // s3
-    // A == 467 Hz
-    if (VPORTA.INTFLAGS & PIN6_bm) 
-    {
-      // light the right left line
-      spi_write(0b00111110);
+    if (VPORTA.INTFLAGS & PIN6_bm) { // s3
+      spi_write(0b00111110); // light the right left line
       VPORTA_INTFLAGS = PIN6_bm;
       TCA0.SINGLE.PERBUF = 7137; // freq is 467 Hz  // 3.33/frequency
       TCA0.SINGLE.CMP0BUF = 3569; // PWM / 2 = 50% duty cycle
@@ -181,13 +168,10 @@ ISR(PORTA_PORT_vect)
       inputs[current_input] = 3;
       current_input += 1;
     }
-    // s4
-    // E (low) == 467 * 2^(-17/12) == 174.93 ~= 175 Hz
-    if (VPORTA.INTFLAGS & PIN7_bm) 
-    {
-      // light the right right line
-      spi_write(0b01101011);
+    if (VPORTA.INTFLAGS & PIN7_bm) { // s4
+      spi_write(0b01101011);  // light the right right line
       VPORTA_INTFLAGS = PIN7_bm;
+      // E (low) == 467 * 2^(-17/12) == 174.93 ~= 175 Hz
       TCA0.SINGLE.PERBUF = 19045; // freq is 175 Hz  // 3.33/frequency
       TCA0.SINGLE.CMP0BUF = 9523; // PWM / 2 = 50% duty cycle
       buzzer_switch = 1;
