@@ -9,6 +9,27 @@ void enable_led(void) {
   PORTA.DIRSET = PIN1_bm; // the DISP LATCH as output 
 }
 
+// a function for playing a tone and lit for each push button
+void desplay_play_note(uint8_t note_number) {
+  if (note_number == 1) {
+    TCA0.SINGLE.PERBUF = 9523; // freq is 350 Hz  // 3.33/frequency
+    TCA0.SINGLE.CMP0BUF = 4761; // PWM / 2 = 50% duty cycle
+    spi_write(0b10111110); // light up the left line 
+  } if (note_number == 2) {
+    TCA0.SINGLE.PERBUF = 11337; // freq is 294 Hz  // 3.33/frequency
+    TCA0.SINGLE.CMP0BUF = 5668; // PWM / 2 = 50% duty cycle
+    spi_write(0b11101011); // light up the second left line
+  } if (note_number == 3) {
+    TCA0.SINGLE.PERBUF = 7137; // freq is 467 Hz  // 3.33/frequency
+    TCA0.SINGLE.CMP0BUF = 3569; // PWM / 2 = 50% duty cycle
+    spi_write(0b00111110); // light up the second right line
+  } if (note_number == 4) {
+    TCA0.SINGLE.PERBUF = 19045; // freq is 175 Hz  // 3.33/frequency
+    TCA0.SINGLE.CMP0BUF = 9523; // PWM / 2 = 50% duty cycle
+    spi_write(0b01101011); // light up the right line
+  }
+}
+
 // a function for desplay score on the LED display
 void display_score(uint16_t sequence_length) {
   uint16_t score = sequence_length - 1;

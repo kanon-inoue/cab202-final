@@ -4,6 +4,7 @@
 #include <util/delay.h>
 #include "initialization.h"
 #include "project.h"
+#include "led.h"
 #include "buzzer.h"
 #include "sequence.h"
 #include "uart.h"
@@ -19,40 +20,32 @@ BLANK_DISPLAY // for blank the LED display
 } serialstate;
 
 uint32_t mask = 0xE2023CAB;
-uint32_t studentNum = 0x11186267; 
+uint32_t student_num = 0x11186267; 
 uint16_t sequence_length = 1; 
 uint16_t playback_delay = 1000; // TODO
 uint8_t buzzer_switch = 0; // the buzzer switch is off
 uint16_t elapsed_time = 0;
-uint8_t is_counting = 1; 
 uint32_t inputs[256]; // TODO the maximum score is 
 uint8_t current_input = 0;
 uint8_t current_note_to_play = 0;
+uint8_t previous_note;
 uint32_t next_step = 0;
 serialstate state = BLANK_DISPLAY;
 
-void init()
-{
-  // for timer 
-  clock_init();
-  pwm_init();
-
-  // for LED
-  enable_led();
-
-  // for buttons
-  buttons_init();
-  spi_init();
+void init(void) { // TODO
+  clock_init(); // for enable timer 
+  pwm_init(); // for enable timer
+  enable_led(); // for enable LED
+  buttons_init(); // for enable buttons
+  spi_init(); // for enable LED desplay
 }
 
-
-// for timer
-ISR(TCB1_INT_vect) {
-  static uint32_t sequence[200];
+ISR(TCB1_INT_vect) { // for timer
+  static uint32_t sequence[256];
 
   switch (state) {
     case BLANK_DISPLAY:
-      spi_write(0x00); // 8 display 
+      spi_write(0xFF); // clear desplay
       if (elapsed_time == playback_delay) {
         state = PLAY_NEW_NOTE;
         elapsed_time = 0;
@@ -62,24 +55,8 @@ ISR(TCB1_INT_vect) {
       break;
     case PLAY_NEW_NOTE:
       if (next_step == 0) {
-        next_step = next(mask, &studentNum);
-        if (next_step == 1) {
-          TCA0.SINGLE.PERBUF = 9523; // freq is 350 Hz  // 3.33/frequency
-          TCA0.SINGLE.CMP0BUF = 4761; // PWM / 2 = 50% duty cycle
-          spi_write(0b10111110);
-        } else if (next_step == 2) {
-          TCA0.SINGLE.PERBUF = 11337; // freq is 294 Hz  // 3.33/frequency
-          TCA0.SINGLE.CMP0BUF = 5668; // PWM / 2 = 50% duty cycle
-          spi_write(0b11101011);
-        } else if (next_step == 3) {
-          TCA0.SINGLE.PERBUF = 7137; // freq is 467 Hz  // 3.33/frequency
-          TCA0.SINGLE.CMP0BUF = 3569; // PWM / 2 = 50% duty cycle
-          spi_write(0b00111110);
-        } else if (next_step == 4) {
-          TCA0.SINGLE.PERBUF = 19045; // freq is 175 Hz  // 3.33/frequency
-          TCA0.SINGLE.CMP0BUF = 9523; // PWM / 2 = 50% duty cycle
-          spi_write(0b01101011);
-        }
+        next_step = next(mask, &student_num);
+        desplay_play_note(next_step); // if the next step = 1, then it playes s1's note
         sequence[sequence_length - 1] = next_step;
       }
       if (elapsed_time == playback_delay/2) {
@@ -100,28 +77,13 @@ ISR(TCB1_INT_vect) {
       } else {
         if (buzzer_switch == 0) {
           buzzer_switch = 1;
-          if (sequence[current_note_to_play] == 1) {
-            TCA0.SINGLE.PERBUF = 9523; // freq is 350 Hz  // 3.33/frequency
-            TCA0.SINGLE.CMP0BUF = 4761; // PWM / 2 = 50% duty cycle
-            spi_write(0b10111110);
-          } else if (sequence[current_note_to_play] == 2) {
-            TCA0.SINGLE.PERBUF = 11337; // freq is 294 Hz  // 3.33/frequency
-            TCA0.SINGLE.CMP0BUF = 5668; // PWM / 2 = 50% duty cycle
-            spi_write(0b11101011);
-          } else if (sequence[current_note_to_play] == 3) {
-            TCA0.SINGLE.PERBUF = 7137; // freq is 467 Hz  // 3.33/frequency
-            TCA0.SINGLE.CMP0BUF = 3569; // PWM / 2 = 50% duty cycle
-            spi_write(0b00111110);
-          } else if (sequence[current_note_to_play] == 4) {
-            TCA0.SINGLE.PERBUF = 19045; // freq is 175 Hz  // 3.33/frequency
-            TCA0.SINGLE.CMP0BUF = 9523; // PWM / 2 = 50% duty cycle
-            spi_write(0b01101011);
-          }
+          previous_note = sequence[current_note_to_play];
+          desplay_play_note(previous_note); // play the note which was already played and passed 
         }
         if ((buzzer_switch == 1) && (elapsed_time == (playback_delay / 2))) {
           TCA0.SINGLE.PERBUF = 0;
           TCA0.SINGLE.CMP0BUF = 0;
-          spi_write(0xFF); // clear display
+          spi_write(0xFF); // clear the LED display
         }
         if (elapsed_time == playback_delay) {
           buzzer_switch = 0;
@@ -139,15 +101,13 @@ ISR(TCB1_INT_vect) {
         buzzer_switch = 0;
       }
       if (elapsed_time == playback_delay) {
-        // FAIL
-        if ((inputs[current_input - 1] != sequence[current_input - 1]) && (inputs[current_input - 1] != NULL)) {
+        if ((inputs[current_input - 1] != sequence[current_input - 1]) && (inputs[current_input - 1] != NULL)) { // when FAIL
           memset(inputs, '\0', sizeof(inputs)); // reset the input array
           current_input = 0;
           state = FAIL;
           elapsed_time = 0;
         }
-        // SUCCESS
-        if (current_input == sequence_length) {
+        if (current_input == sequence_length) { // when SUCCESS
           sequence_length += 1;
           memset(inputs, '\0', sizeof(inputs)); // reset the input array
           current_input = 0;
@@ -171,12 +131,8 @@ ISR(TCB1_INT_vect) {
         state = BLANK_DISPLAY;
       }
   }
-
   elapsed_time++;
   TCB1.INTFLAGS = TCB_CAPT_bm;
-
-    // when certain criterion met
-    // set is-counting to zero
 }
 
 // for button
