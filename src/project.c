@@ -25,7 +25,7 @@ uint16_t sequence_length = 1;
 uint16_t playback_delay = 1000; // TODO
 uint8_t buzzer_switch = 0; // the buzzer switch is off
 uint16_t elapsed_time = 0;
-uint32_t inputs[256]; // TODO the maximum score is 
+uint32_t inputs[200]; // TODO the maximum score is 
 uint8_t current_input = 0;
 uint8_t current_note_to_play = 0;
 uint8_t previous_note;
@@ -41,7 +41,7 @@ void init(void) { // TODO
 }
 
 ISR(TCB1_INT_vect) { // for timer
-  static uint32_t sequence[250];
+  static uint32_t sequence[200];
 
   switch (state) {
     case BLANK_DISPLAY:
