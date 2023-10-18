@@ -163,6 +163,10 @@ ISR(PORTA_PORT_vect) { // for button
       elapsed_time = 0;
       inputs[current_input] = 4;
       current_input += 1;
+    } else {
+    VPORTA_INTFLAGS = 0xFF; // Acknowledge interrupt
     }
+  } else {
+    VPORTA_INTFLAGS = 0xFF; // Acknowledge interrupt
   }
 }
