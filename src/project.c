@@ -136,43 +136,29 @@ ISR(TCB1_INT_vect) { // for timer
 ISR(PORTA_PORT_vect) { // for button 
   if (state == RECV_IDENT) {
     if (VPORTA.INTFLAGS & PIN4_bm) { // push s1
-      spi_write(0b10111110); //0b1FAB GCDE // light the left left line
       VPORTA_INTFLAGS = PIN4_bm;
-      // E (high) == 467 * 2^(-5/12) == 349.85 ~= 350 Hz -> 9522.86 for perbuf -> INC = 19046  DEC = 4761
-      TCA0.SINGLE.PERBUF = 9523; // freq is 350 Hz  // 3.33/frequency
-      TCA0.SINGLE.CMP0BUF = 4761; // PWM / 2 = 50% duty cycle
+      desplay_play_note(1);
       buzzer_switch = 1;
       elapsed_time = 0;
       inputs[current_input] = 1;
       current_input += 1;
-    } 
-    if (VPORTA.INTFLAGS & PIN5_bm) { // push s2
-      spi_write(0b11101011); // light the left right line
+    } else if (VPORTA.INTFLAGS & PIN5_bm) { // push s2
       VPORTA_INTFLAGS = PIN5_bm;
-      // C# == 467 * 2^(-8/12) == 294.19 ~= 294 Hz -> 11336.73 for perbuf
-      TCA0.SINGLE.PERBUF = 11337; // freq is 294 Hz  // 3.33/frequency
-      TCA0.SINGLE.CMP0BUF = 5668; // PWM / 2 = 50% duty cycle
+      desplay_play_note(2);
       buzzer_switch = 1;
       elapsed_time = 0;
       inputs[current_input] = 2;
       current_input += 1;
-    }
-    if (VPORTA.INTFLAGS & PIN6_bm) { // s3
-      spi_write(0b00111110); // light the right left line
+    } else if (VPORTA.INTFLAGS & PIN6_bm) { // s3
       VPORTA_INTFLAGS = PIN6_bm;
-      TCA0.SINGLE.PERBUF = 7137; // freq is 467 Hz  // 3.33/frequency
-      TCA0.SINGLE.CMP0BUF = 3569; // PWM / 2 = 50% duty cycle
+      desplay_play_note(3);
       buzzer_switch = 1;
       elapsed_time = 0;
       inputs[current_input] = 3;
       current_input += 1;
-    }
-    if (VPORTA.INTFLAGS & PIN7_bm) { // s4
-      spi_write(0b01101011);  // light the right right line
+    } else if (VPORTA.INTFLAGS & PIN7_bm) { // s4
       VPORTA_INTFLAGS = PIN7_bm;
-      // E (low) == 467 * 2^(-17/12) == 174.93 ~= 175 Hz
-      TCA0.SINGLE.PERBUF = 19045; // freq is 175 Hz  // 3.33/frequency
-      TCA0.SINGLE.CMP0BUF = 9523; // PWM / 2 = 50% duty cycle
+      desplay_play_note(4);
       buzzer_switch = 1;
       elapsed_time = 0;
       inputs[current_input] = 4;
