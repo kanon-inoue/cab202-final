@@ -195,12 +195,10 @@ int main(void)
             // spi_write(inputs[current_input - 1]);
           }
           if ((inputs[current_input - 1] != sequence[current_input - 1]) && (inputs[current_input - 1] != '\0')) { // when FAIL
-            spi_write(0xBB);
-
-            // memset(inputs, '\0', sizeof(inputs)); // reset the input array
-            // current_input = 0;
-            // state = FAIL;
-            // elapsed_time = 0;
+            memset(inputs, '\0', sizeof(inputs)); // reset the input array
+            current_input = 0;
+            state = FAIL;
+            elapsed_time = 0;
           }
           if (current_input == sequence_length) { // when SUCCESS
             sequence_length += 1;
