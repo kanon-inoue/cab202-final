@@ -4,4 +4,6 @@
 #include <stdio.h>
 
 void pwm_init(void);
-void adc_init();
+void adc_init(void);
+void enable_buzzer(void);
+extern volatile uint8_t pb_debounced_state;
