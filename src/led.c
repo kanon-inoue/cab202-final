@@ -1,13 +1,6 @@
 #include <avr/io.h>
 #include <stdio.h>
-#include "led.h"
 #include "spi.h"
-
-// a function for enable LED LATCH
-void enable_led(void) {
-  PORTA.OUTSET = PIN1_bm; // enable DISP LATCH
-  PORTA.DIRSET = PIN1_bm; // the DISP LATCH as output 
-}
 
 #define E_high 9523; // freq is 350 Hz  // 3.33/frequency
 #define C 11337; // freq is 294 Hz  // 3.33/frequency

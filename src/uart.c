@@ -6,11 +6,12 @@
 void uart_init(void)
 {
     PORTB.DIRSET = PIN2_bm; // Output enable USART0 TXD (PB2)
-    USART0.BAUD = 1389;                           // 9600 baud @ 3.3 MHz
+    USART0.BAUD = 1389;  
+    USART0.CTRLA |= USART_RXCIE_bm;// uart start intrupt
     USART0.CTRLB = USART_RXEN_bm | USART_TXEN_bm; // Enable Tx/Rx
 }
 
-// TODO a function to get a character on the the serial monitor?
+// a function to get a character from the the serial monitor (inout)
 // Blocking write of byte c to UART
 char uart_getc(void)
 {
@@ -18,7 +19,7 @@ char uart_getc(void)
     return USART0.RXDATAL;
 }
 
-// a function to print an input character on the serial monitor
+// a function to print character from the serial monitor (output)
 // Blocking read of byte c from UART
 void uart_putc(char c)
 {

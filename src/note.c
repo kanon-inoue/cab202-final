@@ -1,10 +1,10 @@
-#include <avr/io.h>
-#include <avr/interrupt.h>
-#include <stdio.h>
-#include <string.h>
-#include <util/delay.h>
+// #include <avr/io.h>
+// #include <avr/interrupt.h>
+// #include <stdio.h>
+// #include <string.h>
+// #include <util/delay.h>
 
-volatile uint8_t pb_debounced_state = 0xFF;
+// volatile uint8_t pb_debounced_state = 0xFF;
 
 // ISR(TCB0_INT_vect) { // for timer
 

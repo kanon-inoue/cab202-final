@@ -3,7 +3,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
+void button_init(void);
 void pwm_init(void);
-void adc_init(void);
-void enable_buzzer(void);
+void stop_buzzer(void);
+void timer_init(void);
+void clock_init(void);
+void potentiometer_init(void);
 extern volatile uint8_t pb_debounced_state;
