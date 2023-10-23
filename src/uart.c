@@ -21,15 +21,16 @@ char uart_getc(void)
 
 // a function to print character from the serial monitor (output)
 // Blocking read of byte c from UART
-void uart_putc(char c)
+void uart_putc(const char c)
 {
     while (!(USART0.STATUS & USART_DREIF_bm)); // Wait for TXDATA empty
     USART0.TXDATAL = c;
 }
 
 // a function to print an input string/array on the serial monitor
-void uart_puts(char* string) // pointer is used for literaling over a string
+void uart_puts(const char *const s) // pointer is used for literaling over a string
 {
+    char* string = s;
     while (*string != '\0') { // if the input is not empty/null
         uart_putc(*string); // ptint each character from the beggining by calling the uart_putc function with an argument
         string++; // goes to the next character

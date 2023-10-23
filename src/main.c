@@ -59,12 +59,16 @@ int main(void)
   
   uint8_t pb_previous = dbinput;
 
+  #define TX_BUFFER_SIZE 30
+  char tx_buffer[TX_BUFFER_SIZE];
+
   while (1)
   {
     // for potentiometer // TODO
     // we want duty cycle will be 0% and 100% and new result: 0 - 255
     uint32_t playback_delay = get_new_playback_delay(ADC0.RESULT);
-    uart_puts(&playback_delay);
+    snprintf(tx_buffer, TX_BUFFER_SIZE, "My playback_delay: %u\n", playback_delay); // USART0 already initialised
+    uart_puts(tx_buffer);
     uint8_t input = dbinput;
     uint8_t pressed = (pb_previous ^ dbinput) & pb_previous;
     uint8_t released = (pb_previous ^ dbinput) & dbinput;
