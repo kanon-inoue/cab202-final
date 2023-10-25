@@ -24,12 +24,51 @@ volatile uint16_t buzzer_timer = 0u;
 volatile uint16_t buzzer_delay = 2000u;
 volatile uint8_t octave = 4;
 volatile uint8_t dbinput = 0xFF;
-volatile enum serialstate state = BLANK_DISPLAY;
+volatile enum serialstate state = PLAY_NEW_NOTE;
+volatile char input_char = '\0';
 uint16_t elapsed_time = 0;
 uint16_t is_counting = 0;
 
+uint16_t inc_freq(uint8_t original_tone) {
+  if (original_tone == 1) {
+    uint32_t new_tone = 9523 * 2;
+    TCA0.SINGLE.PERBUF = new_tone;
+    TCA0.SINGLE.CMP0BUF = 9523;
+  } if (original_tone == 2) {
+    uint32_t new_tone = 11337 * 2;
+    TCA0.SINGLE.PERBUF = new_tone;
+    TCA0.SINGLE.CMP0BUF = 11337;
+  } if (original_tone == 3) {
+    uint32_t new_tone = 7137 * 2;
+    TCA0.SINGLE.PERBUF = new_tone;
+    TCA0.SINGLE.CMP0BUF = 7137;
+  } if (original_tone == 4) {
+    uint32_t new_tone = 19045 * 2;
+    TCA0.SINGLE.PERBUF = new_tone;
+    TCA0.SINGLE.CMP0BUF = 19045;
+  }
+}
+uint16_t dec_freq(uint8_t original_tone) {
+  if (original_tone == 1) {
+    uint32_t new_tone = 9523 / 2;
+    TCA0.SINGLE.PERBUF = new_tone;
+    TCA0.SINGLE.CMP0BUF = 2381;
+  } if (original_tone == 2) {
+    uint32_t new_tone = 11337 / 2;
+    TCA0.SINGLE.PERBUF = new_tone;
+    TCA0.SINGLE.CMP0BUF = 2834;
+  } if (original_tone == 3) {
+    uint32_t new_tone = 7137 / 2;
+    TCA0.SINGLE.PERBUF = new_tone;
+    TCA0.SINGLE.CMP0BUF = 1785;
+  } if (original_tone == 4) {
+    uint32_t new_tone = 19045 / 2;
+    TCA0.SINGLE.PERBUF = new_tone;
+    TCA0.SINGLE.CMP0BUF = 4762;
+  }
+}
 
-uint32_t get_new_playback_delay(uint32_t adc_result) {
+uint32_t get_new_playback_delay(uint32_t adc_result) { // we want duty cycle will be 0% and 100% and new result: 0 - 255
   return ((((adc_result+1)*1750UL) >> 8) + 250);
 }
 
@@ -46,7 +85,7 @@ int main(void)
   sei();
 
   uint32_t mask = 0xE2023CAB;
-  uint32_t student_num = 0x11186267; 
+  uint32_t student_num = 0x11186267;
   uint16_t sequence_length = 1; 
   uint8_t buzzer_switch = 0; // the buzzer switch is off
   uint32_t inputs[200]; // TODO the maximum score is 
@@ -64,11 +103,9 @@ int main(void)
 
   while (1)
   {
-    // for potentiometer // TODO
-    // we want duty cycle will be 0% and 100% and new result: 0 - 255
-    uint32_t playback_delay = get_new_playback_delay(ADC0.RESULT);
-    snprintf(tx_buffer, TX_BUFFER_SIZE, "My playback_delay: %u\n", playback_delay); // USART0 already initialised
-    uart_puts(tx_buffer);
+    uint32_t playback_delay = get_new_playback_delay(ADC0.RESULT); // for potentiometer
+    //snprintf(tx_buffer, TX_BUFFER_SIZE, "My playback_delay: %u\n", playback_delay); // USART0 already initialised
+    // uart_puts(tx_buffer);
     uint8_t input = dbinput;
     uint8_t pressed = (pb_previous ^ dbinput) & pb_previous;
     uint8_t released = (pb_previous ^ dbinput) & dbinput;
@@ -122,30 +159,30 @@ int main(void)
         }
       break;
       case RECV_IDENT:
-        if (pressed & PIN4_bm) { 
+        if ((pressed & PIN4_bm) || (input_char == '1') || (input_char == 'q')){ 
           inputs[current_input] = 1;
           current_input += 1;
           //VPORTA_INTFLAGS = PIN4_bm;
           desplay_play_note(1);
           buzzer_switch = 1;
           elapsed_time = 0;
-          buzzer_timer = 0;
+          input_char = '\0';
           button_currently_pressed = 1;
-        } else if (released & PIN4_bm && (elapsed_time >= (playback_delay / 2))) {
+        } else if ((released & PIN4_bm) && (elapsed_time >= (playback_delay / 2))) {
           stop_buzzer();
           spi_write(0xFF); // clear display
           buzzer_switch = 0;
           button_currently_pressed = 0;
           elapsed_time = (playback_delay / 2);
         }
-        if (pressed & PIN5_bm) {
+        if ((pressed & PIN5_bm) || (input_char == '2') || (input_char == 'w')) {
           inputs[current_input] = 2;
           current_input += 1;
           //VPORTA_INTFLAGS = PIN5_bm;
           desplay_play_note(2);
           buzzer_switch = 1;
           elapsed_time = 0;
-          buzzer_timer = 0;
+          input_char = '\0';
           button_currently_pressed = 1;
         } else if (released & PIN5_bm && (elapsed_time >= (playback_delay / 2))) {
           stop_buzzer();
@@ -154,14 +191,14 @@ int main(void)
           button_currently_pressed = 0;
           elapsed_time = (playback_delay / 2);
         }
-        if (pressed & PIN6_bm) {
+        if ((pressed & PIN6_bm) || (input_char == '3') || (input_char == 'e')) {
           inputs[current_input] = 3;
           current_input += 1;
           //VPORTA_INTFLAGS = PIN6_bm;
           desplay_play_note(3);
           buzzer_switch = 1;
           elapsed_time = 0;
-          buzzer_timer = 0;
+          input_char = '\0';
           button_currently_pressed = 1;
         } else if (released & PIN6_bm && (elapsed_time >= (playback_delay / 2))) {
           stop_buzzer();
@@ -170,22 +207,29 @@ int main(void)
           button_currently_pressed = 0;
           elapsed_time = (playback_delay / 2);
         }
-        if (pressed & PIN7_bm) {
+        if ((pressed & PIN7_bm) || (input_char == '4') || (input_char == 'r')) {
           inputs[current_input] = 4;
           current_input += 1;
           //VPORTA_INTFLAGS = PIN7_bm;
           desplay_play_note(4);
           buzzer_switch = 1;
           elapsed_time = 0;
-          buzzer_timer = 0;
+          input_char = '\0';
           button_currently_pressed = 1;
         } else if (released & PIN7_bm && (elapsed_time >= (playback_delay / 2))) {
           stop_buzzer();
           spi_write(0xFF); // clear display
           buzzer_switch = 0;
+          button_currently_pressed = 0;
           elapsed_time = (playback_delay / 2);
         }
-
+        if (buzzer_switch == 1 && elapsed_time >= (playback_delay / 2)) {
+          stop_buzzer();
+          spi_write(0xFF); // clear display
+          buzzer_switch = 0;
+          elapsed_time = (playback_delay / 2);
+          button_currently_pressed = 0;
+        }
         if (released & (PIN4_bm | PIN5_bm | PIN6_bm | PIN7_bm)) {
           button_currently_pressed = 0;
         }
@@ -259,47 +303,46 @@ ISR(TCB0_INT_vect) {
 }
 
 // #define NOT_RECEIVING_DELAY 0xFF
-// ISR(USART0_RXC_vect) {
-//   static char rxbuf[5];
-//   static uint8_t rxpos = NOT_RECEIVING_DELAY;
-//   char rx = USART0.RXDATAL;
-//   USART0.TXDATAL = rx;
+ISR(USART0_RXC_vect) {
+  // static char rxbuf[5];
+  // static uint8_t rxpos = NOT_RECEIVING_DELAY;
+  input_char = USART0.RXDATAL;
 
-//   if (rxpos == NOT_RECEIVING_DELAY) {
-//     switch (rx) {
-//       case '1': //1or  "q": S1 during game play
-//         desplay_play_note(1);
-//       break;
-//       case '2': // 2or "w" S2 during game play
-//         desplay_play_note(2);
-//       break;
-//       case '3': //  3 or e S3 during game play
-//         desplay_play_note(3);
-//       break;
-//       case '4': // 4 or r S4 during game play
-//         desplay_play_note(4);
-//       break;
-//       case ',': // , k Increase frequency of tones
-//         inc_octave();
-//       break;
-//       case '.': // . l Decrease frequency of tones
-//         dec_octave();
-//       break;
-//       case '0': // 0 p Reset frequencies to default and sequence index to 0
+  // if (rxpos == NOT_RECEIVING_DELAY) {
+  //   switch (rx) {
+  //     case '1': //1or  "q": S1 during game play
+  //       desplay_play_note(1);
+  //     break;
+  //     case '2': // 2or "w" S2 during game play
+  //       desplay_play_note(2);
+  //     break;
+  //     case '3': //  3 or e S3 during game play
+  //       desplay_play_note(3);
+  //     break;
+  //     case '4': // 4 or r S4 during game play
+  //       desplay_play_note(4);
+  //     break;
+  //     case ',': // , k Increase frequency of tones
+  //       inc_octave();
+  //     break;
+  //     case '.': // . l Decrease frequency of tones
+  //       dec_octave();
+  //     break;
+  //     case '0': // 0 p Reset frequencies to default and sequence index to 0
 
-//       break;
-//       case '9': // 9 o Load new seed for pseudo-random sequence
-//       break;
-//     }
-//   } else {
-//     rxbuf[rxpos++] = rx;
-//     if (rxpos == 4) {
-//       rxpos = NOT_RECEIVING_DELAY;
-//       int16_t new_delay;
-//       rxbuf[4] = '\0';
-//       if (sscanf(rxbuf, "%x", &new_delay) ==1) {
-//         buzzer_delay = new_delay;
-//       }
-//     }
-//   }
-// }
+  //     break;
+  //     case '9': // 9 o Load new seed for pseudo-random sequence
+  //     break;
+  //   }
+  // } else {
+  //   rxbuf[rxpos++] = rx;
+  //   if (rxpos == 4) {
+  //     rxpos = NOT_RECEIVING_DELAY;
+  //     int16_t new_delay;
+  //     rxbuf[4] = '\0';
+  //     if (sscanf(rxbuf, "%x", &new_delay) ==1) {
+  //       buzzer_delay = new_delay;
+  //     }
+    // }
+  // }
+}
