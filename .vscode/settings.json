@@ -4,6 +4,7 @@
     "initialization.h": "c",
     "spi.h": "c",
     "qutyio.h": "c",
-    "interrupt.h": "c"
+    "interrupt.h": "c",
+    "io.h": "c"
   }
 }

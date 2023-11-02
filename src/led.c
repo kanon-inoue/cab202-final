@@ -2,28 +2,28 @@
 #include <stdio.h>
 #include "spi.h"
 
-#define E_high 9523; // freq is 350 Hz  // 3.33/frequency
-#define C 11337; // freq is 294 Hz  // 3.33/frequency
-#define A 7137; // freq is 467 Hz  // 3.33/frequency
-#define E_low 19045; // freq is 175 Hz  // 3.33/frequency
+uint16_t E_high = 9523; // freq is 350 Hz  // 3.33/frequency
+uint16_t C = 11337; // freq is 294 Hz  // 3.33/frequency
+uint16_t A = 7137; // freq is 467 Hz  // 3.33/frequency
+uint16_t E_low = 19045; // freq is 175 Hz  // 3.33/frequency
 
 // a function for playing a tone and lit for each push button
 void desplay_play_note(uint8_t note_number) {
   if (note_number == 1) {
     TCA0.SINGLE.PERBUF = E_high; 
-    TCA0.SINGLE.CMP0BUF = 4761; // PWM / 2 = 50% duty cycle
+    TCA0.SINGLE.CMP0BUF = E_high/2; // PWM / 2 = 50% duty cycle
     spi_write(0b10111110); // light up the left line 
   } if (note_number == 2) {
     TCA0.SINGLE.PERBUF = C; 
-    TCA0.SINGLE.CMP0BUF = 5668; // PWM / 2 = 50% duty cycle
+    TCA0.SINGLE.CMP0BUF = C/2; // PWM / 2 = 50% duty cycle
     spi_write(0b11101011); // light up the second left line
   } if (note_number == 3) {
     TCA0.SINGLE.PERBUF = A; 
-    TCA0.SINGLE.CMP0BUF = 3569; // PWM / 2 = 50% duty cycle
+    TCA0.SINGLE.CMP0BUF = A/2; // PWM / 2 = 50% duty cycle
     spi_write(0b00111110); // light up the second right line
   } if (note_number == 4) {
     TCA0.SINGLE.PERBUF = E_low; 
-    TCA0.SINGLE.CMP0BUF = 9523; // PWM / 2 = 50% duty cycle
+    TCA0.SINGLE.CMP0BUF = E_low/2; // PWM / 2 = 50% duty cycle
     spi_write(0b01101011); // light up the right line
   }
 }

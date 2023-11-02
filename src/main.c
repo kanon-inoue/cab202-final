@@ -51,8 +51,8 @@ int main(void)
   
   uint8_t pb_previous = dbinput;
 
-  // #define TX_BUFFER_SIZE 30
-  // char tx_buffer[TX_BUFFER_SIZE];
+  #define TX_BUFFER_SIZE 30
+  char tx_buffer[TX_BUFFER_SIZE];
 
   while (1)
   {
@@ -64,30 +64,32 @@ int main(void)
     uint8_t released = (pb_previous ^ dbinput) & dbinput;
     pb_previous = input;
 
-    // TODO frequency thing
     if ((input_char == ',') || (input_char == 'k')) { // increase frequency of tones
-      inc_freq(inputs[current_input]);
+      inc_freq();
+      input_char = '\0';
     }
     if ((input_char == '.') || (input_char == 'l')) { // decrease frequency of tones
-      dec_freq(inputs[current_input]);
+      dec_freq();
+      input_char = '\0';
     }
     if ((input_char == '0') || (input_char == 'p')) { // reset frequencies to default and sequence index to 0
       uint8_t tone = inputs[current_input];
       uint32_t pseudo_random_sequence_seed; 
       // resett all frequencies back to the default
       if (tone == 1){
-        TCA0.SINGLE.CMP0BUF = 9523;
+        TCA0.SINGLE.CMP0BUF = E_high;
       } else if (tone == 2) {
-        TCA0.SINGLE.CMP0BUF = 11337;
+        TCA0.SINGLE.CMP0BUF = C;
       } else if (tone == 3){
-        TCA0.SINGLE.CMP0BUF = 7137;
+        TCA0.SINGLE.CMP0BUF = A;
       } else if (tone == 4) {
-        TCA0.SINGLE.CMP0BUF = 19045;
+        TCA0.SINGLE.CMP0BUF = E_low;
       }
       // reset the pseudo-random sequence seed back to the initial seed // TODO
       // pseudo_random_sequence_seed = initial_seed;
       // reset the sequence length back to one // TODO
       sequence_length = 1;
+      input_char = '\0';
     }
     if ((input_char == '9') || (input_char == 'o')) { // load new seed to for pseudo-random sequencean be received through the UART, and their corresponding actions are summarised in Table 3.
       // The SEED key followed by 8 hexadecimal digits (in lowercase) 
@@ -97,6 +99,7 @@ int main(void)
       // is sent over serial). If any of the next 8 characters is not a hexadecimal digit, 
       // the LFSR will not be updated.
       uint32_t newLFSR;
+      input_char = '\0';
     }
 
     switch (state) {
@@ -275,45 +278,5 @@ ISR(TCB0_INT_vect) {
 
 // #define NOT_RECEIVING_DELAY 0xFF
 ISR(USART0_RXC_vect) {
-  // static char rxbuf[5];
-  // static uint8_t rxpos = NOT_RECEIVING_DELAY;
   input_char = USART0.RXDATAL;
-
-  // if (rxpos == NOT_RECEIVING_DELAY) {
-  //   switch (rx) {
-  //     case '1': //1or  "q": S1 during game play
-  //       desplay_play_note(1);
-  //     break;
-  //     case '2': // 2or "w" S2 during game play
-  //       desplay_play_note(2);
-  //     break;
-  //     case '3': //  3 or e S3 during game play
-  //       desplay_play_note(3);
-  //     break;
-  //     case '4': // 4 or r S4 during game play
-  //       desplay_play_note(4);
-  //     break;
-  //     case ',': // , k Increase frequency of tones
-  //       inc_octave();
-  //     break;
-  //     case '.': // . l Decrease frequency of tones
-  //       dec_octave();
-  //     break;
-  //     case '0': // 0 p Reset frequencies to default and sequence index to 0
-
-  //     break;
-  //     case '9': // 9 o Load new seed for pseudo-random sequence
-  //     break;
-  //   }
-  // } else {
-  //   rxbuf[rxpos++] = rx;
-  //   if (rxpos == 4) {
-  //     rxpos = NOT_RECEIVING_DELAY;
-  //     int16_t new_delay;
-  //     rxbuf[4] = '\0';
-  //     if (sscanf(rxbuf, "%x", &new_delay) ==1) {
-  //       buzzer_delay = new_delay;
-  //     }
-    // }
-  // }
 }
