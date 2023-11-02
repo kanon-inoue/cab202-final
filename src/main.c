@@ -157,7 +157,7 @@ int main(void)
             button_currently_pressed = 0;
             elapsed_time = (playback_delay / 2);
         }
-        if (playing_or_waiting_for_note == 1 && elapsed_time >= (playback_delay / 2)) {
+        if (button_currently_pressed == 0 && playing_or_waiting_for_note == 1 && elapsed_time >= (playback_delay / 2)) {
           stop_buzzer();
           spi_write(0xFF); // clear display
           playing_or_waiting_for_note = 0;
