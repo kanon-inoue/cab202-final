@@ -21,15 +21,14 @@ void pwm_init(void)
     // TCA0.SINGLE.CTRLB = (TCA_SINGLE_WGMODE_SINGLESLOPE_gc | TCA_SINGLE_CMP1EN_bm | TCA_SINGLE_CMP0EN_bm); // single slope, WO1
     TCA0.SINGLE.CTRLB |= TCA_SINGLE_CMP0EN_bm | TCA_SINGLE_WGMODE_SINGLESLOPE_gc; // turn on buzzer, WO0, single slope 
     // decide period. before turn off -> PER after turn on --> PERBUF
-    TCA0.SINGLE.PERBUF = 9259u; // for pitch  // CPU_CLK_SPEED / Disired_freq  // 3.33333333333 Mhz / Frequency (360)
-    TCA0.SINGLE.CMP0BUF = 0; // for volume   // buzzer - see schematic    // connects to waveform output 0, whhich is CMP0
+    TCA0.SINGLE.PER = 1; // for pitch  // CPU_CLK_SPEED / Disired_freq  // 3.33333333333 Mhz / Frequency (360)
+    TCA0.SINGLE.CMP0 = 0; // for volume   // buzzer - see schematic    // connects to waveform output 0, whhich is CMP0
     // TCA0.SINGLE.CMP0BUF = TCA0.SINGLE.PER >> 1; // per devide by 2
 
     TCA0.SINGLE.CTRLA |= TCA_SINGLE_ENABLE_bm;  // enable the timer
 }
 
 void stop_buzzer(void) {
-  TCA0.SINGLE.PERBUF = 0;
   TCA0.SINGLE.CMP0BUF = 0;
 }
 
@@ -55,15 +54,4 @@ void clock_init(void) {
   // TCB1.CTRLB = TCB_CNTMODE_INT_gc;
   // TCB1.INTCTRL = TCB_CAPT_bm;
   // TCB1.CTRLA = TCB_ENABLE_bm;
-}
-
-void potentiometer_init(void) {
-  // configure ADC0 in 8-bit single conversion mode.
-  ADC0.CTRLA = ADC_ENABLE_bm; // enable adc
-  ADC0.CTRLB  = ADC_PRESC_DIV2_gc; // /2 prescaler
-  ADC0.CTRLC = (4 << ADC_TIMEBASE_gp) | ADC_REFSEL_VDD_gc; // or ADC0.CTRLC = 0b00100000 | ADC_REFSEL_VDD_gc;
-  ADC0.CTRLE = 64; // sample duration of 64
-  ADC0.CTRLF = ADC_FREERUN_bm; // free running, left adjust or ADC0.CTRLF = ADC_FREERUN_bm | ADC_LEFTADJ_bm;
-  ADC0.MUXPOS = ADC_MUXPOS_AIN2_gc;
-  ADC0.COMMAND = ADC_MODE_SINGLE_8BIT_gc | ADC_START_IMMEDIATE_gc; // 8 bit resolusion, single ended
 }

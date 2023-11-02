@@ -10,6 +10,8 @@
 #include "sequence.h"
 #include "spi.h"
 #include "uart.h"
+#include "potentiometer.h"
+#include "uartplay.h"
 
 enum serialstate {
 PLAY_NEW_NOTE, // for playing a new note after successing
@@ -22,66 +24,22 @@ BLANK_DISPLAY // for blank the LED display
 
 volatile uint16_t buzzer_timer = 0u;
 volatile uint16_t buzzer_delay = 2000u;
-volatile uint8_t octave = 4;
 volatile uint8_t dbinput = 0xFF;
 volatile enum serialstate state = PLAY_NEW_NOTE;
 volatile char input_char = '\0';
 uint16_t elapsed_time = 0;
 uint16_t is_counting = 0;
 
-uint16_t inc_freq(uint8_t original_tone) {
-  if (original_tone == 1) {
-    uint32_t new_tone = 9523 * 2;
-    TCA0.SINGLE.PERBUF = new_tone;
-    TCA0.SINGLE.CMP0BUF = 9523;
-  } if (original_tone == 2) {
-    uint32_t new_tone = 11337 * 2;
-    TCA0.SINGLE.PERBUF = new_tone;
-    TCA0.SINGLE.CMP0BUF = 11337;
-  } if (original_tone == 3) {
-    uint32_t new_tone = 7137 * 2;
-    TCA0.SINGLE.PERBUF = new_tone;
-    TCA0.SINGLE.CMP0BUF = 7137;
-  } if (original_tone == 4) {
-    uint32_t new_tone = 19045 * 2;
-    TCA0.SINGLE.PERBUF = new_tone;
-    TCA0.SINGLE.CMP0BUF = 19045;
-  }
-}
-uint16_t dec_freq(uint8_t original_tone) {
-  if (original_tone == 1) {
-    uint32_t new_tone = 9523 / 2;
-    TCA0.SINGLE.PERBUF = new_tone;
-    TCA0.SINGLE.CMP0BUF = 2381;
-  } if (original_tone == 2) {
-    uint32_t new_tone = 11337 / 2;
-    TCA0.SINGLE.PERBUF = new_tone;
-    TCA0.SINGLE.CMP0BUF = 2834;
-  } if (original_tone == 3) {
-    uint32_t new_tone = 7137 / 2;
-    TCA0.SINGLE.PERBUF = new_tone;
-    TCA0.SINGLE.CMP0BUF = 1785;
-  } if (original_tone == 4) {
-    uint32_t new_tone = 19045 / 2;
-    TCA0.SINGLE.PERBUF = new_tone;
-    TCA0.SINGLE.CMP0BUF = 4762;
-  }
-}
-
-uint32_t get_new_playback_delay(uint32_t adc_result) { // we want duty cycle will be 0% and 100% and new result: 0 - 255
-  return ((((adc_result+1)*1750UL) >> 8) + 250);
-}
-
 int main(void)
 {
   cli();
-  button_init();
+  button_init(); 
   pwm_init();
   timer_init();
   clock_init();
   uart_init();
   potentiometer_init();
-  spi_init(); // for enable LED desplay
+  spi_init();
   sei();
 
   uint32_t mask = 0xE2023CAB;
@@ -89,6 +47,7 @@ int main(void)
   uint16_t sequence_length = 1; 
   uint8_t buzzer_switch = 0; // the buzzer switch is off
   uint32_t inputs[200]; // TODO the maximum score is 
+  // TODO DONT USE ARRAY - store only student num and current num
   uint8_t current_input = 0;
   uint8_t current_note_to_play = 0;
   uint8_t previous_note;
@@ -98,8 +57,8 @@ int main(void)
   
   uint8_t pb_previous = dbinput;
 
-  #define TX_BUFFER_SIZE 30
-  char tx_buffer[TX_BUFFER_SIZE];
+  // #define TX_BUFFER_SIZE 30
+  // char tx_buffer[TX_BUFFER_SIZE];
 
   while (1)
   {
@@ -110,6 +69,41 @@ int main(void)
     uint8_t pressed = (pb_previous ^ dbinput) & pb_previous;
     uint8_t released = (pb_previous ^ dbinput) & dbinput;
     pb_previous = input;
+
+    // TODO frequency thing
+    if ((input_char == ',') || (input_char == 'k')) { // increase frequency of tones
+      inc_freq(inputs[current_input]);
+    }
+    if ((input_char == '.') || (input_char == 'l')) { // decrease frequency of tones
+      dec_freq(inputs[current_input]);
+    }
+    if ((input_char == '0') || (input_char == 'p')) { // reset frequencies to default and sequence index to 0
+      uint8_t tone = inputs[current_input];
+      uint32_t pseudo_random_sequence_seed; 
+      // resett all frequencies back to the default
+      if (tone == 1){
+        TCA0.SINGLE.CMP0BUF = 9523;
+      } else if (tone == 2) {
+        TCA0.SINGLE.CMP0BUF = 11337;
+      } else if (tone == 3){
+        TCA0.SINGLE.CMP0BUF = 7137;
+      } else if (tone == 4) {
+        TCA0.SINGLE.CMP0BUF = 19045;
+      }
+      // reset the pseudo-random sequence seed back to the initial seed // TODO
+      // pseudo_random_sequence_seed = initial_seed;
+      // reset the sequence length back to one // TODO
+      sequence_length = 1;
+    }
+    if ((input_char == '9') || (input_char == 'o')) { // load new seed to for pseudo-random sequencean be received through the UART, and their corresponding actions are summarised in Table 3.
+      // The SEED key followed by 8 hexadecimal digits (in lowercase) 
+      // will result in the LFSR being re-initialised with the 8 digits encoded 
+      // as a 32-bit value. The new seed will apply to the next sequence generated 
+      // (whether that is due to current game being won, or lost, or if the RESET key 
+      // is sent over serial). If any of the next 8 characters is not a hexadecimal digit, 
+      // the LFSR will not be updated.
+      uint32_t newLFSR;
+    }
 
     switch (state) {
       case BLANK_DISPLAY:
@@ -270,7 +264,7 @@ int main(void)
           elapsed_time = 0;
           state = BLANK_DISPLAY;
         }
-        break;
+      break;
     }
   } 
 }

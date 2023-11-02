@@ -8,5 +8,4 @@ void pwm_init(void);
 void stop_buzzer(void);
 void timer_init(void);
 void clock_init(void);
-void potentiometer_init(void);
 extern volatile uint8_t pb_debounced_state;
