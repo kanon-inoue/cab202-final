@@ -76,28 +76,24 @@ int main(void)
       uint8_t tone = inputs[current_input];
       uint32_t pseudo_random_sequence_seed; 
       // resett all frequencies back to the default
-      if (tone == 1){
-        TCA0.SINGLE.CMP0BUF = E_high;
-      } else if (tone == 2) {
-        TCA0.SINGLE.CMP0BUF = C;
-      } else if (tone == 3){
-        TCA0.SINGLE.CMP0BUF = A;
-      } else if (tone == 4) {
-        TCA0.SINGLE.CMP0BUF = E_low;
-      }
+      E_high = 9523;
+      C = 11337;
+      A = 7137; 
+      E_low = 19045;
       // reset the pseudo-random sequence seed back to the initial seed // TODO
       // pseudo_random_sequence_seed = initial_seed;
-      // reset the sequence length back to one // TODO
+      // reset the sequence length back to one
       sequence_length = 1;
       input_char = '\0';
+      buzzer_switch = 0;
+      current_input = 0;
+      current_note_number_to_play = 0;
+      button_currently_pressed = 0;
+      elapsed_time = 0;
+      memset(inputs, '\0', sizeof(inputs)); // reset the input array
+      state = PLAY_NOTE;
     }
     if ((input_char == '9') || (input_char == 'o')) { // load new seed to for pseudo-random sequencean be received through the UART, and their corresponding actions are summarised in Table 3.
-      // The SEED key followed by 8 hexadecimal digits (in lowercase) 
-      // will result in the LFSR being re-initialised with the 8 digits encoded 
-      // as a 32-bit value. The new seed will apply to the next sequence generated 
-      // (whether that is due to current game being won, or lost, or if the RESET key 
-      // is sent over serial). If any of the next 8 characters is not a hexadecimal digit, 
-      // the LFSR will not be updated.
       uint32_t newLFSR;
       input_char = '\0';
     }
