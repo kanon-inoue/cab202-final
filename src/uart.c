@@ -11,14 +11,6 @@ void uart_init(void)
     USART0.CTRLB = USART_RXEN_bm | USART_TXEN_bm; // Enable Tx/Rx
 }
 
-// a function to get a character from the the serial monitor (inout)
-// Blocking write of byte c to UART
-char uart_getc(void)
-{
-    while (!(USART0.STATUS & USART_RXCIF_bm)); // Wait for data
-    return USART0.RXDATAL;
-}
-
 // a function to print character from the serial monitor (output)
 // Blocking read of byte c from UART
 void uart_putc(const char c)

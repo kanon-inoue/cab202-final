@@ -8,7 +8,7 @@ uint16_t A = 7137; // freq is 467 Hz  // 3.33/frequency
 uint16_t E_low = 19045; // freq is 175 Hz  // 3.33/frequency
 
 // a function for playing a tone and lit for each push button
-void desplay_play_note(uint8_t note_number) {
+void display_play_note(uint8_t note_number) {
   if (note_number == 1) {
     TCA0.SINGLE.PERBUF = E_high; 
     TCA0.SINGLE.CMP0BUF = E_high/2; // PWM / 2 = 50% duty cycle
@@ -28,7 +28,7 @@ void desplay_play_note(uint8_t note_number) {
   }
 }
 
-// a function for desplay score on the LED display
+// a function for display score on the LED display
 void display_score(uint16_t sequence_length, uint16_t elapsed_time) {
   uint16_t score = sequence_length - 1;
   uint16_t degit; // for the left degit
@@ -62,8 +62,8 @@ void display_score(uint16_t sequence_length, uint16_t elapsed_time) {
     }
 }
 
-// a function for g segments desplay for failling
-void fail_desplay(uint16_t elapsed_time) {
+// a function for g segments display for failling
+void fail_display(uint16_t elapsed_time) {
   if (elapsed_time % 2 == 1) spi_write(0b01110111);
   else spi_write(0b11110111); 
 }

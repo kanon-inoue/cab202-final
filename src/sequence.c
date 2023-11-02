@@ -18,7 +18,7 @@ uint32_t get_note_for_index(uint32_t index) {
   uint32_t mask = 0xE2023CAB;
 
   uint32_t step;
-  for (uint32_t i = 0; i <= index; i++){
+  for (uint32_t i = 0; i <= index; i++) { // Run through steps until the current index
     step = next(mask, &student_num);
   }
   return step + 1;

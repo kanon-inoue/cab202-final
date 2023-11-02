@@ -5,14 +5,14 @@
 #include <string.h>
 #include "led.h"
 
-uint16_t dec_freq() {
+void dec_freq() {
   E_high = E_high * 2;
   C = C * 2;
   A = A * 2;
   E_low = E_low * 2;
 }
 
-uint16_t inc_freq() {
+void inc_freq() {
   E_high = E_high / 2;
   C = C / 2;
   A = A / 2;
