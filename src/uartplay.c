@@ -12,7 +12,7 @@ uint16_t dec_freq() {
   E_low = E_low * 2;
 }
 
-uint16_t int_freq() {
+uint16_t inc_freq() {
   E_high = E_high / 2;
   C = C / 2;
   A = A / 2;
