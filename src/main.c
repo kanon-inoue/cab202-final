@@ -14,8 +14,7 @@
 #include "uartplay.h"
 
 enum serialstate {
-PLAY_NEW_NOTE, // for playing a new note after successing
-PLAY_EXISTING_NOTE, // for playing exsisting notes which can be 1 to any
+PLAY_NOTE, // for playing exsisting notes which can be 1 to any
 RECV_IDENT, // for waiting for the player pushes a buttum input
 FAIL, // for when the player fails
 DISPLAY_SCORE, // for desplaying the score on the LED display on the QUTy and serial monitor
@@ -25,7 +24,7 @@ BLANK_DISPLAY // for blank the LED display
 volatile uint16_t buzzer_timer = 0u;
 volatile uint16_t buzzer_delay = 2000u;
 volatile uint8_t dbinput = 0xFF;
-volatile enum serialstate state = PLAY_NEW_NOTE;
+volatile enum serialstate state = PLAY_NOTE;
 volatile char input_char = '\0';
 uint16_t elapsed_time = 0;
 uint16_t is_counting = 0;
@@ -42,17 +41,12 @@ int main(void)
   spi_init();
   sei();
 
-  uint32_t mask = 0xE2023CAB;
-  uint32_t student_num = 0x11186267;
   uint16_t sequence_length = 1; 
   uint8_t buzzer_switch = 0; // the buzzer switch is off
   uint32_t inputs[200]; // TODO the maximum score is 
-  // TODO DONT USE ARRAY - store only student num and current num
   uint8_t current_input = 0;
-  uint8_t current_note_to_play = 0;
-  uint8_t previous_note;
-  uint32_t next_step = 0;
-  static uint32_t sequence[200];
+  uint8_t current_note_number_to_play = 0;
+  uint8_t note;
   uint8_t button_currently_pressed = 0;
   
   uint8_t pb_previous = dbinput;
@@ -109,37 +103,20 @@ int main(void)
       case BLANK_DISPLAY:
         spi_write(0xFF); // clear desplay
         if (elapsed_time == playback_delay) {
-          state = PLAY_NEW_NOTE;
+          state = PLAY_NOTE;
           elapsed_time = 0;
           sequence_length = 1;
-          memset(sequence, '\0', sizeof(sequence));
         }
       break;
-      case PLAY_NEW_NOTE:
-        if (next_step == 0) {
-          next_step = next(mask, &student_num);
-          desplay_play_note(next_step); // if the next step = 1, then it playes s1's note
-          sequence[sequence_length - 1] = next_step;
-        }
-        if (elapsed_time == playback_delay/2) {
-          stop_buzzer();
-          spi_write(0xFF); // clear display
-        }
-        if (elapsed_time == playback_delay) {
-          elapsed_time = 0;
-          next_step = 0;
+      case PLAY_NOTE:
+        if (current_note_number_to_play == sequence_length) {
+          current_note_number_to_play = 0;
           state = RECV_IDENT;
-        }
-      break;
-      case PLAY_EXISTING_NOTE:
-        if (current_note_to_play == sequence_length - 1) {
-          current_note_to_play = 0;
-          state = PLAY_NEW_NOTE;
         } else {
           if (buzzer_switch == 0) {
             buzzer_switch = 1;
-            previous_note = sequence[current_note_to_play];
-            desplay_play_note(previous_note); // play the note which was already played and passed 
+            note = get_note_for_index(current_note_number_to_play);
+            desplay_play_note(note);
           }
           if ((buzzer_switch == 1) && (elapsed_time == (playback_delay / 2))) {
             stop_buzzer();
@@ -147,7 +124,7 @@ int main(void)
           }
           if (elapsed_time == playback_delay) {
             buzzer_switch = 0;
-            current_note_to_play += 1;
+            current_note_number_to_play += 1;
             elapsed_time = 0;
           }
         }
@@ -235,7 +212,7 @@ int main(void)
             buzzer_switch = 0;
           }
           if (elapsed_time == playback_delay && current_input > 0) {
-            if ((inputs[current_input - 1] != sequence[current_input - 1]) && (inputs[current_input - 1] != '\0')) { // when FAIL
+            if ((inputs[current_input - 1] != get_note_for_index(current_input - 1)) && (inputs[current_input - 1] != '\0')) { // when FAIL
               memset(inputs, '\0', sizeof(inputs)); // reset the input array
               current_input = 0;
               state = FAIL;
@@ -246,7 +223,7 @@ int main(void)
               memset(inputs, '\0', sizeof(inputs)); // reset the input array
               current_input = 0;
               elapsed_time = 0;
-              state = PLAY_EXISTING_NOTE;
+              state = PLAY_NOTE;
             }
           }
         }
